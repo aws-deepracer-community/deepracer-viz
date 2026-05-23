@@ -18,7 +18,10 @@ class Model:
 
     def get_conv_outputs(self):
         ops = self.session.graph.get_operations()
-        conv_ops = list(filter(lambda x: re.match(r".*Conv2d\_\d+\/BiasAdd", x.name), ops))
+        # The optional `_\d+` suffix handles SimApp v6+ models where TF appends a
+        # deduplication suffix to op names when weight variables already occupy the
+        # base name (e.g. Conv2d_0_1/BiasAdd instead of Conv2d_0/BiasAdd).
+        conv_ops = list(filter(lambda x: re.match(r".*Conv2d_\d+(?:_\d+)?/BiasAdd$", x.name), ops))
 
         return [op.outputs[0] for op in conv_ops]
 
